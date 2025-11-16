@@ -1,0 +1,3 @@
+[submodule "configPy"]
+	path = configPy
+	url = https://github.com/henriquefac/configPy.git
