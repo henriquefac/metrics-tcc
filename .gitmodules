@@ -1,8 +1,9 @@
 [submodule "configPy"]
-	path = configPy
-	url = https://github.com/henriquefac/configPy.git
-	branch = metrics-tcc-config
-[submodule "chunk-transcription-tcc"]
-	path = chunk-transcription-tcc
+    path = configPy
+    url = https://github.com/henriquefac/configPy.git
+    branch = metrics-tcc-config
+
+[submodule "parser_transcription"]
+	path = parser_transcription
 	url = git@github.com:henriquefac/chunk-transcription-tcc.git
-	brach = module
+	branch = module
