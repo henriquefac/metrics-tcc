@@ -10,7 +10,11 @@ audio_dir = output_dir["audio"]
 
 # arquivos
 audio_files = list(audio_dir.iter_files())
-ata_files = [file for file in list(ata_dir.iter_files()) if file.name in list(map(lambda x: x.name, audio_files))]
+ata_files = [
+    file
+    for file in list(ata_dir.iter_files())
+    if file.name in list(map(lambda x: x.name, audio_files))
+]
 
 # escolhe o par
 teste_audio = audio_files[0]
