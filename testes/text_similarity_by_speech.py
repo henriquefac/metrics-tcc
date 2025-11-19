@@ -2,6 +2,7 @@ from configPy import EnvManager, Config
 from transcription_processing.transcricao.findPattern import TranscriptionParser
 from llama_index.embeddings.ollama import OllamaEmbedding
 from sklearn.metrics.pairwise import cosine_similarity
+from typing import List, Dict
 import numpy as np
 
 # diretório dos audios e atas
@@ -21,6 +22,11 @@ ata_files = [
 teste_audio = audio_files[0]
 teste_ata = ata_files[0]
 
+print("=====================")
+print(f"Ata: {teste_ata.name}")
+print(f"Audio: {teste_audio.name}")
+print("===================")
+
 with open(teste_audio, "r", encoding="utf-8") as audio:
     audio_text = audio.read()
 
@@ -29,13 +35,6 @@ with open(teste_ata, "r", encoding="utf-8") as ata:
 
 # reconstruir transcrição apenas com o texto das falas
 
-new_text_audio = ""
-parser = TranscriptionParser(audio_text)
-
-for speech in parser.speeches:
-    new_text_audio += speech.text
-    new_text_audio += "\n\n"
-
 
 # configuração do ollama
 ollamenv = EnvManager.ollama()
@@ -43,13 +42,38 @@ base = f"http://{ollamenv.BASE_OLLAMA}:{ollamenv.PORT_OLLAMA}"
 
 embedder = OllamaEmbedding(ollamenv.EMBEDDING_MODEL, base)
 
-embeds = embedder.get_text_embedding_batch([new_text_audio, ata_text])
+text_audio_embed: List[Dict] = []
+parser = TranscriptionParser(audio_text)
 
-audio_vec = np.array(embeds[0]).reshape(1, -1)
-ata_vec = np.array(embeds[1]).reshape(1, -1)
+# texto de cada fala
+speech_text = list(map(lambda x: x.text, parser.speeches))
 
-# similaridade do cosseno
-sim = cosine_similarity(audio_vec, ata_vec)[0][0]
+# tamanho de cada fala
+speech_length = np.array([len(text) for text in speech_text])
+
+# total de caracteres
+total_char = np.sum(speech_length)
+
+# embed de cada fala
+embeds_for_audio = [
+    np.array(embed).reshape(1, -1)
+    for embed in embedder.get_text_embedding_batch(speech_text)
+]
+
+# embed da ata
+embed = embedder.get_text_embedding(ata_text)
+ata_vec = np.array(embed).reshape(1, -1)
+
+# lista de similaridades calculadas
+# multiplicada pelo total de carateres
+# da fala
+cosim = []
+
+# calcular similaridade de cosseno ponderado pelo tamnho de cada fala
+for embed, length in zip(embeds_for_audio, speech_length):
+    cosim.append(cosine_similarity(embed, ata_vec)[0][0] * length)
+
+sim = np.sum(cosim) / total_char
 
 print("==================================")
 print(f"Similaridade semântica (coseno): {sim:.4f}")
