@@ -14,7 +14,7 @@ audio_files = list(audio_dir.iter_files())
 ata_files = [f for f in ata_dir.iter_files() if f.name in [a.name for a in audio_files]]
 
 # Escolher par
-audio_file = audio_files[0]
+audio_file = audio_files[1]
 ata_file = ata_files[0]
 
 with open(audio_file, "r", encoding="utf-8") as f:
@@ -54,6 +54,10 @@ transcription_vec = np.sum(audio_embeds * weights[:, None], axis=0).reshape(1, -
 
 # ----------- Embedding da ATA por seções -----------
 ata_sections = [sec for sec in ata_text.split("\n\n") if sec.strip()]
+
+print("============== SESSÕES DAS ATAS ================")
+print(ata_sections)
+print("================================================")
 
 ata_embeds = embedder.get_text_embedding_batch(ata_sections)
 ata_embeds = np.array(ata_embeds)
